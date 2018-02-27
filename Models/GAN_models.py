@@ -117,7 +117,7 @@ def discriminator_model():
 
 def cGAN_model(generator,discriminator):
     
-    discriminator.trainable = False
+   # discriminator.trainable = False
     model = Model(inputs=generator.inputs,outputs=discriminator([generator.input,generator.output]))
     
     return model
