@@ -13,6 +13,17 @@ from keras.optimizers import *
 from keras.models import *
 import matplotlib.pyplot as plt
 from keras.regularizers import *
+from keras.utils import plot_model
+
+
+# In[ ]:
+
+
+fixed_seed_num = 1234
+np.random.seed(fixed_seed_num)
+random.seed(fixed_seed_num) # not sure if needed or not
+tf.set_random_seed(fixed_seed_num)
+keras.set_random_seed(fixed_seed_num)
 
 
 # In[2]:
@@ -140,20 +151,33 @@ def cGAN_model(generator,discriminator):
 # In[3]:
 
 
-gen=generator_model()
-# x.summary()
+gen = generator_model()
+gen.summary()
 
-disc=discriminator_model()
-# y.summary()
+disc = discriminator_model()
+disc.summary()
 
-cGAN=cGAN_model(gen, disc)
+cGAN = cGAN_model(gen, disc)
 cGAN.summary()
 
+# plot_model(x, to_file='generator_model.png')
+# SVG(model_to_dot(x).create(prog='dot', format='svg'))
 
-# In[6]:
+disc.compile(loss=['binary_crossentropy'], optimizer=Adam(lr=0.0001), metrics=['accuracy'])
+
+# plot_model(model, to_file='discriminator_model.png')
+# SVG(model_to_dot(y).create(prog='dot', format='svg'))
+
+cGAN.compile(loss=['binary_crossentropy','mse'], loss_weights=[1, 10], optimizer=Adam(lr=0.001))
+
+# plot_model(model, to_file='cGAN_visualization.png')
+# SVG(model_to_dot(z).create(prog='dot', format='svg'))
 
 
-samples = 1500
+# In[8]:
+
+
+samples = 250
 dataset = '../../manga_dataset/' 
 rgb = np.zeros((samples, 512, 512, 3))
 gray = np.zeros((samples, 512, 512, 1))
@@ -163,11 +187,32 @@ for i, image in enumerate(os.listdir(dataset)[:samples]):
     J = cv2.cvtColor(I, cv2.COLOR_BGR2GRAY)
     J = J.reshape(J.shape[0], J.shape[1], 1)
     rgb[i] = I; gray[i] = J
-    break
 
 
 # In[ ]:
 
 
-np.savez_compressed('../../data/dataset', rgb=rgb, gray=gray) 
+epochs = 1000
+for i in range(epochs):
+    gen_image = gen.predict(gray, batch_size=16)   
+    inputs = np.concatenate([gray, gray])
+    outputs = np.concatenate([rgb, gen_image])
+    y = np.concatenate([np.ones((samples, 1)), np.zeros((samples, 1))])
+    disc.fit([inputs, outputs], y, epochs=1, batch_size=16)
+    disc.trainable = False
+    cGAN.fit(gray, [np.ones((samples, 1)), rgb], epochs=1, batch_size=1)
+    disc.trainable = True
+    if i%10 == 0:
+        gen.save_weights('../../gen_imgs/'+str(i)+'.h5')
+    if i%2 == 0:
+        for j in range(10):
+            if not os.path.exists('../../gen_imgs/'+str(j)+'/'):
+                os.mkdir('../../gen_imgs/'+str(j)+'/')
+            cv2.imwrite('../../gen_imgs/'+str(j)+'/'+str(i)+'.jpg', gen_image[j])
+
+
+# In[ ]:
+
+
+print os.listdir(dataset)
 
