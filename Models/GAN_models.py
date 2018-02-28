@@ -21,9 +21,7 @@ from keras.utils import plot_model
 
 fixed_seed_num = 1234
 np.random.seed(fixed_seed_num)
-random.seed(fixed_seed_num) # not sure if needed or not
 tf.set_random_seed(fixed_seed_num)
-keras.set_random_seed(fixed_seed_num)
 
 
 # In[2]:
@@ -194,11 +192,11 @@ for i, image in enumerate(os.listdir(dataset)[:samples]):
 
 epochs = 1000
 for i in range(epochs):
-    gen_image = gen.predict(gray, batch_size=16)   
+    gen_image = gen.predict(gray, batch_size=8)   
     inputs = np.concatenate([gray, gray])
     outputs = np.concatenate([rgb, gen_image])
     y = np.concatenate([np.ones((samples, 1)), np.zeros((samples, 1))])
-    disc.fit([inputs, outputs], y, epochs=1, batch_size=16)
+    disc.fit([inputs, outputs], y, epochs=1, batch_size=12)
     disc.trainable = False
     cGAN.fit(gray, [np.ones((samples, 1)), rgb], epochs=1, batch_size=1)
     disc.trainable = True
