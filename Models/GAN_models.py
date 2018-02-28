@@ -1,14 +1,28 @@
+
+# coding: utf-8
+
+# In[1]:
+
+
+import os
+import cv2
 import numpy as np
 import keras
 from keras.layers import *
 from keras.optimizers import *
 from keras.models import *
+import matplotlib.pyplot as plt
 from keras.regularizers import *
+
+
+# In[2]:
+
+
 def generator_model():
     
-    generator_input = Input(batch_shape=(None, 512, 512, 3), name='generator_input')
+    generator_input = Input(batch_shape=(None, 512, 512, 1), name='generator_input')
     
-    #encoder
+    # encoder
     conv1_32 = Conv2D(32,kernel_size=(3,3),strides=(1,1),padding='same',activation='elu')(generator_input)
     
     conv2_64 = Conv2D(64,kernel_size=(3,3),strides=(2,2),padding='same',activation='elu')(conv1_32)
@@ -29,7 +43,7 @@ def generator_model():
     conv7_512 = Conv2D(512,kernel_size=(3,3),padding='same',activation='elu')(conv6_512)
     conv7_512 = BatchNormalization()(conv7_512)
     
-    #decoder
+    # decoder
     conv8_512 = Conv2D(512,kernel_size=(3,3),padding='same',activation='elu')(conv7_512)
     conv8_512 = BatchNormalization(axis=1)(conv8_512)
     
@@ -64,7 +78,7 @@ def generator_model():
 
 def discriminator_model():
     
-    generator_input = Input(batch_shape=(None, 512, 512, 3), name='generator_output')
+    generator_input = Input(batch_shape=(None, 512, 512, 1), name='generator_output')
     generator_output = Input(batch_shape=(None, 512, 512, 3), name='generator_input')
     
     input1 = BatchNormalization()(generator_input)
@@ -111,13 +125,49 @@ def discriminator_model():
     
     output = Dense(1,activation='sigmoid')(conv)
     
-    model = Model(inputs=([generator_input,generator_output]),outputs=[output,generator_output])
+    model = Model(inputs=([generator_input,generator_output]),outputs=[output])
     
     return model
 
 def cGAN_model(generator,discriminator):
     
-   # discriminator.trainable = False
-    model = Model(inputs=generator.inputs,outputs=discriminator([generator.input,generator.output]))
+    discriminator.trainable = False
+    model = Model(inputs=generator.inputs,outputs=[discriminator([generator.input,generator.output]), generator.output])
     
     return model
+
+
+# In[3]:
+
+
+gen=generator_model()
+# x.summary()
+
+disc=discriminator_model()
+# y.summary()
+
+cGAN=cGAN_model(gen, disc)
+cGAN.summary()
+
+
+# In[6]:
+
+
+samples = 1500
+dataset = '../../manga_dataset/' 
+rgb = np.zeros((samples, 512, 512, 3))
+gray = np.zeros((samples, 512, 512, 1))
+for i, image in enumerate(os.listdir(dataset)[:samples]):
+    I = cv2.imread(dataset+image)
+    I = cv2.resize(I, (512, 512))
+    J = cv2.cvtColor(I, cv2.COLOR_BGR2GRAY)
+    J = J.reshape(J.shape[0], J.shape[1], 1)
+    rgb[i] = I; gray[i] = J
+    break
+
+
+# In[ ]:
+
+
+np.savez_compressed('../../data/dataset', rgb=rgb, gray=gray) 
+
