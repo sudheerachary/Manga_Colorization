@@ -1,4 +1,3 @@
-
 import os
 import cv2
 import numpy as np
@@ -10,13 +9,14 @@ import matplotlib.pyplot as plt
 from keras.regularizers import *
 from keras.utils import plot_model
 
-# Set seed for random number generators to get repeateable results
+# set seed for random number generators to get repeateable results
 fixed_seed_num = 1234
 np.random.seed(fixed_seed_num)
 tf.set_random_seed(fixed_seed_num)
 
 def generator_model(x_shape,y_shape):
-#     encoder
+    
+    # encoder
     generator_input = Input(batch_shape=(None,x_shape,y_shape, 1), name='generator_input')
     generator_input_normalized = BatchNormalization()(generator_input)
     
@@ -51,7 +51,7 @@ def generator_model(x_shape,y_shape):
     conv7_512 = Conv2D(512,kernel_size=(3,3),padding='same',activation='elu',kernel_regularizer=l2(0.001))(conv6_512)
     conv7_512 = BatchNormalization()(conv7_512)
     
-#     decoder
+    # decoder
     conv8_512 = Conv2D(512,kernel_size=(3,3),padding='same',activation='elu',kernel_regularizer=l2(0.001))(conv7_512)
     conv8_512 = BatchNormalization(axis=1)(conv8_512)
     
