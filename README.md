@@ -15,3 +15,5 @@
 	
   - **cGAN**
 	<img src="models/generator_visualization.png" height="1024px"> + <img src="models/generator_visualization.png" height="1024px"> = <img src="models/cGAN_visualization.png" height="1024px">
+
+ <img src="segmentation/input_images/7.jpeg" height="512px" width="256px">  <img src="datasets/generated_images/2.jpg" width="256px" height="512px"> <img src="segmentation/results/7_final_result.jpg" height="512px" width="256px">
