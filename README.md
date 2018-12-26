@@ -1,3 +1,5 @@
+[![HitCount](http://hits.dwyl.io/sudheerachary/Manga_Colorization.svg)](http://hits.dwyl.io/sudheerachary/Manga_Colorization)
+
 # Manga Colorization
   - **`models/`** consists the cGAN models & visualizations.
   	- run **`train.py`** to train on images stored in **`datasets/train`**.
